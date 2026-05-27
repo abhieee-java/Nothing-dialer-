@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>For Someone Special — A Cinematic Memory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07080d;
+      --bg-soft: #0d1018;
+      --glass: rgba(255, 255, 255, 0.08);
+      --glass-stroke: rgba(255, 255, 255, 0.18);
+      --text: #eef1ff;
+      --muted: #bfc6de;
+      --accent: #a8c8ff;
+      --accent-2: #f3cfff;
+      --glow: rgba(168, 200, 255, 0.35);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background: radial-gradient(circle at 20% 15%, #1a2340 0%, transparent 35%),
+                  radial-gradient(circle at 80% 20%, #2a1f42 0%, transparent 35%),
+                  linear-gradient(180deg, var(--bg) 0%, #0a0d15 100%);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06), transparent 55%);
+      mix-blend-mode: screen;
+      z-index: 1;
+    }
+
+    #webgl-bg, #particles {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #particles { z-index: 2; opacity: 0.8; }
+
+    .site {
+      position: relative;
+      z-index: 4;
+      perspective: 1200px;
+      transform-style: preserve-3d;
+    }
+
+    .section {
+      min-height: 100vh;
+      width: 100%;
+      position: relative;
+      padding: clamp(4rem, 8vw, 8rem) clamp(1.2rem, 6vw, 6rem);
+      display: grid;
+      align-content: center;
+      overflow: hidden;
+    }
+
+    .hero {
+      align-content: center;
+      text-align: center;
+      isolation: isolate;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 7vw, 6.2rem);
+      letter-spacing: 0.02em;
+      line-height: 1.05;
+      max-width: 15ch;
+      margin: 0 auto 1rem;
+      text-shadow: 0 0 35px var(--glow);
+      transform: translateZ(80px);
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--muted);
+      max-width: 60ch;
+      margin: 0 auto;
+      opacity: 0.9;
+    }
+
+    .glow-orb {
+      position: absolute;
+      width: 38vw;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(170,205,255,0.35) 0%, rgba(151,105,255,0.15) 40%, transparent 70%);
+      filter: blur(20px);
+      z-index: -1;
+      left: 50%;
+      top: 45%;
+      transform: translate(-50%, -50%);
+      animation: pulse 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: translate(-50%, -50%) scale(0.9); opacity: 0.65; }
+      to   { transform: translate(-50%, -50%) scale(1.1); opacity: 0.95; }
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 5vw, 4rem);
+      line-height: 1.1;
+      margin-bottom: 1.2rem;
+    }
+
+    .copy {
+      max-width: 70ch;
+      line-height: 1.85;
+      color: #dce2f5;
+      font-size: clamp(1rem, 1.4vw, 1.2rem);
+    }
+
+    .glass {
+      background: linear-gradient(120deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03));
+      border: 1px solid var(--glass-stroke);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+      backdrop-filter: blur(16px);
+      border-radius: 22px;
+      padding: clamp(1.2rem, 2.5vw, 2rem);
+      transform-style: preserve-3d;
+    }
+
+    .about-wrap, .message-wrap { max-width: 880px; margin: 0 auto; }
+
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: clamp(1rem, 2vw, 2rem);
+      margin-top: 2rem;
+    }
+
+    .memory {
+      grid-column: span 6;
+      position: relative;
+      min-height: 42vh;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.16);
+      transform-style: preserve-3d;
+      background: #0f1320;
+    }
+
+    .memory img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.25);
+      filter: saturate(0.88) contrast(1.08) brightness(0.88);
+      will-change: transform, opacity;
+    }
+
+    .reveal-mask {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, #06070d 0%, #0f111a 60%, rgba(15,17,26,0.45) 100%);
+      transform-origin: left center;
+      z-index: 3;
+    }
+
+    .memory .label {
+      position: absolute;
+      left: 1rem;
+      bottom: 1rem;
+      z-index: 4;
+      padding: .45rem .8rem;
+      border-radius: 999px;
+      background: rgba(10, 12, 20, 0.6);
+      border: 1px solid rgba(255,255,255,.18);
+      font-size: .84rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .final-message {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.4rem, 3vw, 2.6rem);
+      line-height: 1.4;
+    }
+
+    .music-toggle {
+      position: fixed;
+      right: 1rem;
+      top: 1rem;
+      z-index: 10;
+      border: 1px solid rgba(255,255,255,0.25);
+      color: var(--text);
+      background: rgba(11,14,24,0.65);
+      backdrop-filter: blur(10px);
+      border-radius: 999px;
+      padding: .62rem 1rem;
+      cursor: pointer;
+      font-size: .86rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .parallax-layer {
+      position: absolute;
+      inset: -10%;
+      pointer-events: none;
+      background: radial-gradient(circle at 25% 25%, rgba(181,207,255,.08), transparent 40%),
+                  radial-gradient(circle at 75% 65%, rgba(236,171,255,.08), transparent 38%);
+      z-index: -1;
+    }
+
+    @media (max-width: 900px) {
+      .memory { grid-column: span 12; min-height: 36vh; }
+      .hero-title { max-width: 11ch; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="webgl-bg"></canvas>
+  <canvas id="particles"></canvas>
+
+  <button class="music-toggle" id="musicBtn" aria-label="Toggle background music">Music: Off</button>
+  <audio id="bgMusic" loop preload="auto" src="https://cdn.pixabay.com/download/audio/2022/11/22/audio_84165cd55f.mp3?filename=gentle-piano-ambient-113997.mp3"></audio>
+
+  <main class="site" id="smooth-content">
+    <section class="section hero" id="intro">
+      <div class="glow-orb"></div>
+      <div class="parallax-layer"></div>
+      <h1 class="hero-title split-lines">For the one who made ordinary moments feel like cinema.</h1>
+      <p class="hero-sub split-lines">A quiet journey through memory, gratitude, and everything words still struggle to hold.</p>
+    </section>
+
+    <section class="section" id="about-her">
+      <div class="about-wrap glass" data-tilt>
+        <h2 class="section-title split-lines">About Her</h2>
+        <p class="copy split-lines">She carries softness like strength, and strength like something gentle. She listens in a way that makes silence feel safe. In every room, she brings the kind of presence that doesn’t need to be loud to be unforgettable. Her laughter lingers like light through curtains at dawn, and her kindness reshapes the day without asking for attention.</p>
+      </div>
+      <div class="parallax-layer"></div>
+    </section>
+
+    <section class="section" id="emotional-paragraph">
+      <div class="glass" data-tilt>
+        <h2 class="section-title split-lines">What She Means</h2>
+        <p class="copy split-lines">There are people we meet, and then there are people we remember in color. She is the reason ordinary streets became beautiful, why late-night conversations became shelter, why time itself began to feel more intentional. In her presence, the world slows into detail: the shape of raindrops on a window, the warmth of holding hands, the quiet joy of being understood without explanation. She is not just part of a memory. She is the atmosphere of it.</p>
+      </div>
+      <div class="parallax-layer"></div>
+    </section>
+
+    <section class="section" id="memories">
+      <h2 class="section-title split-lines">Floating Memories</h2>
+      <div class="memory-grid">
+        <article class="memory" data-float>
+          <div class="reveal-mask"></div>
+          <img src="https://images.unsplash.com/photo-1516589091380-5d8e87df6999?auto=format&fit=crop&w=1200&q=80" alt="Memory one placeholder" />
+          <span class="label">Golden Hour</span>
+        </article>
+        <article class="memory" data-float>
+          <div class="reveal-mask"></div>
+          <img src="https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=1200&q=80" alt="Memory two placeholder" />
+          <span class="label">City Lights</span>
+        </article>
+        <article class="memory" data-float>
+          <div class="reveal-mask"></div>
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80" alt="Memory three placeholder" />
+          <span class="label">Quiet Smile</span>
+        </article>
+        <article class="memory" data-float>
+          <div class="reveal-mask"></div>
+          <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80" alt="Memory four placeholder" />
+          <span class="label">Timeless</span>
+        </article>
+      </div>
+      <div class="parallax-layer"></div>
+    </section>
+
+    <section class="section" id="final-message">
+      <div class="message-wrap glass" data-tilt>
+        <h2 class="section-title split-lines">Final Message</h2>
+        <p class="final-message split-lines">If this story had one truth, it would be this: some souls don’t just pass through your life — they become the light by which you see it. Thank you for being that light.</p>
+      </div>
+      <div class="parallax-layer"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/split-type@0.3.4/umd/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/bundled/lenis.min.js"></script>
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    const lenis = new Lenis({
+      duration: 1.2,
+      smoothWheel: true,
+      wheelMultiplier: 0.85,
+      touchMultiplier: 1.1,
+      easing: (t) => 1 - Math.pow(1 - t, 4)
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+    lenis.on('scroll', ScrollTrigger.update);
+
+    document.querySelectorAll('.split-lines').forEach(el => {
+      const split = new SplitType(el, { types: 'lines' });
+      gsap.from(split.lines, {
+        opacity: 0,
+        yPercent: 100,
+        rotateX: -30,
+        stagger: 0.08,
+        duration: 1.2,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 85%'
+        }
+      });
+    });
+
+    gsap.from('.hero-title', { opacity: 0, y: 45, duration: 1.7, ease: 'power4.out' });
+    gsap.from('.hero-sub', { opacity: 0, y: 30, duration: 1.7, delay: .2, ease: 'power3.out' });
+
+    document.querySelectorAll('.section').forEach(section => {
+      const layer = section.querySelector('.parallax-layer');
+      if (!layer) return;
+      gsap.to(layer, {
+        yPercent: -20,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: true
+        }
+      });
+    });
+
+    document.querySelectorAll('.memory').forEach((card, i) => {
+      const mask = card.querySelector('.reveal-mask');
+      const img = card.querySelector('img');
+
+      gsap.to(mask, {
+        scaleX: 0,
+        skewX: -8,
+        transformOrigin: 'left center',
+        ease: 'power3.inOut',
+        scrollTrigger: {
+          trigger: card,
+          start: 'top 82%',
+          end: 'top 35%',
+          scrub: true
+        }
+      });
+
+      gsap.to(img, {
+        scale: 1,
+        yPercent: -6,
+        rotateZ: i % 2 ? -1.2 : 1.2,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: card,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: true
+        }
+      });
+
+      gsap.fromTo(card,
+        { y: 45, rotateX: 8, opacity: 0.45 },
+        {
+          y: -20,
+          rotateX: -4,
+          opacity: 1,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: card,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true
+          }
+        }
+      );
+    });
+
+    document.querySelectorAll('[data-tilt]').forEach(el => {
+      el.addEventListener('mousemove', (e) => {
+        const rect = el.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width - 0.5;
+        const y = (e.clientY - rect.top) / rect.height - 0.5;
+        gsap.to(el, {
+          rotateY: x * 7,
+          rotateX: -y * 7,
+          transformPerspective: 900,
+          transformOrigin: 'center',
+          duration: 0.5,
+          ease: 'power2.out'
+        });
+      });
+      el.addEventListener('mouseleave', () => {
+        gsap.to(el, { rotateY: 0, rotateX: 0, duration: 0.8, ease: 'power3.out' });
+      });
+    });
+
+    const particleCanvas = document.getElementById('particles');
+    const pctx = particleCanvas.getContext('2d');
+    const particles = [];
+
+    function resizeParticleCanvas() {
+      particleCanvas.width = innerWidth * devicePixelRatio;
+      particleCanvas.height = innerHeight * devicePixelRatio;
+      pctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    }
+    resizeParticleCanvas();
+    addEventListener('resize', resizeParticleCanvas);
+
+    for (let i = 0; i < 85; i++) {
+      particles.push({
+        x: Math.random() * innerWidth,
+        y: Math.random() * innerHeight,
+        r: Math.random() * 2 + 0.3,
+        v: Math.random() * 0.25 + 0.05,
+        a: Math.random() * 0.45 + 0.18
+      });
+    }
+
+    function animateParticles() {
+      pctx.clearRect(0, 0, innerWidth, innerHeight);
+      particles.forEach(p => {
+        p.y -= p.v;
+        if (p.y < -10) {
+          p.y = innerHeight + 10;
+          p.x = Math.random() * innerWidth;
+        }
+        pctx.beginPath();
+        pctx.fillStyle = `rgba(203,220,255,${p.a})`;
+        pctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        pctx.fill();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // Subtle 3D ambient background with Three.js
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('webgl-bg'), alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 100);
+    camera.position.z = 6;
+
+    const geometry = new THREE.IcosahedronGeometry(1.35, 1);
+    const material = new THREE.MeshPhongMaterial({ color: 0x88aaff, transparent: true, opacity: 0.16, shininess: 90, wireframe: true });
+    const orb = new THREE.Mesh(geometry, material);
+    orb.position.set(-1.8, 0.4, 0);
+    scene.add(orb);
+
+    const geometry2 = new THREE.TorusGeometry(1.2, 0.2, 16, 90);
+    const material2 = new THREE.MeshPhongMaterial({ color: 0xe1b8ff, transparent: true, opacity: 0.1, shininess: 70, wireframe: true });
+    const ring = new THREE.Mesh(geometry2, material2);
+    ring.position.set(2.1, -0.6, -1.2);
+    scene.add(ring);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+    const point = new THREE.PointLight(0xbfd4ff, 1.2, 22);
+    point.position.set(2, 2, 4);
+    scene.add(point);
+
+    function render3D() {
+      orb.rotation.x += 0.0015;
+      orb.rotation.y += 0.0025;
+      ring.rotation.x -= 0.0012;
+      ring.rotation.y += 0.0014;
+      renderer.render(scene, camera);
+      requestAnimationFrame(render3D);
+    }
+    render3D();
+
+    addEventListener('resize', () => {
+      renderer.setSize(innerWidth, innerHeight);
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+    });
+
+    const music = document.getElementById('bgMusic');
+    const musicBtn = document.getElementById('musicBtn');
+    music.volume = 0.25;
+
+    musicBtn.addEventListener('click', async () => {
+      if (music.paused) {
+        try {
+          await music.play();
+          musicBtn.textContent = 'Music: On';
+        } catch (_) {
+          musicBtn.textContent = 'Tap Again';
+        }
+      } else {
+        music.pause();
+        musicBtn.textContent = 'Music: Off';
+      }
+    });
+  </script>
+</body>
+</html>
